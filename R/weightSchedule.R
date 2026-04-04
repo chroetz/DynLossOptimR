@@ -1,3 +1,4 @@
+#' @export
 getWeightScheduleFull <- function(
   nDeg,
   d,
@@ -27,16 +28,24 @@ getWeightScheduleFull <- function(
 }
 
 
+#' @export
 getWeightScheduleCoef <- function(
   nDeg,
   d,
   kmax = 1L,
   weightsObsBase = 0.2,
-  reltol = 1e-7
+  reltol = 1e-7,
+  type = "const"
 ) {
+  obsWeightFun <- switch(
+    type,
+    const = \(k, w) c(1, rep(w, k)) / k,
+    point = \(k, w) c(rep(0, k), w),
+    stop("Unknown weight schedule type ", type)
+  )
   weightSchedule <- lapply(seq_len(kmax), function(k) {
     list(
-      weightsObs = c(1, rep(weightsObsBase, k)) / k,
+      weightsObs = obsWeightFun(k, weightsObsBase),
       weightsCoef = rep(0, nrow(PolyPropR::getMonomialFeatureDegrees(d, nDeg))),
       reltol = reltol
     )

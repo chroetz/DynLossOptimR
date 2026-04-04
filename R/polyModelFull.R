@@ -5,7 +5,8 @@ fitFullLoss <- function(
   weightSchedule,
   normalizationType = "none",
   normalizationScale = 1.0,
-  targetUpdateFactor = 0
+  targetUpdateFactor = 0,
+  verbose = FALSE
 ) {
 
   n <- nrow(xTrain)
@@ -14,11 +15,11 @@ fitFullLoss <- function(
   normalization <- PolyPropR::getNormalization(xTrain, normalizationType, normalizationScale)
   xTrain <- PolyPropR::normalize(xTrain, normalization)
 
-  optimizer <- function(par, fn, gr, reltol = 1e-6) {
+  optimizer <- function(par, fn, gr, reltol) {
     stats::optim(par, fn, gr,
       method = "BFGS",
       control = list(
-        maxit = 1e5,
+        maxit = 1e4,
         reltol = reltol
       )
     )
@@ -34,6 +35,9 @@ fitFullLoss <- function(
   target <- xTrain
 
   for (k in seq_along(weightSchedule)) {
+
+    if (verbose) cat("Start weight", k, "\n")
+
     ws <- weightSchedule[[k]]
 
     obj <- TMB::MakeADFun(
@@ -52,6 +56,7 @@ fitFullLoss <- function(
     )
 
     opt <- optimizer(obj$par, obj$fn, obj$gr, reltol = ws$reltol)
+    if (opt$convergence != 0) warning("Optimizer did not converge.", immediate.=TRUE)
 
     analysisNew <- opt$par[names(opt$par) == "ana"]
     coefNew <- opt$par[names(opt$par) == "coef"]
@@ -74,14 +79,8 @@ fitFullLoss <- function(
 
 }
 
+
+#' @export
 predictFullLoss <- function(model, initialConditions, nPred) {
-  d <- ncol(initialConditions)
-  prediction <- array(NA_real_, dim = c(nPred, d, nrow(initialConditions)))
-  initialConditions <- PolyPropR::normalize(initialConditions, model$normalization)
-  currentState <- initialConditions
-  for (i in seq_len(nPred)) {
-    currentState <- PolyPropR::evaluateMonomialFeatures(currentState, model$nDeg) %*% model$coef
-    prediction[i, , ] <- PolyPropR::denormalize(currentState, model$normalization)
-  }
-  return(prediction)
+  predictDefault(model, initialConditions, nPred)
 }

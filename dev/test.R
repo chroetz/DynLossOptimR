@@ -12,7 +12,7 @@ truthDirPath <- file.path(dataDirPath, "truth")
 parentSeed <- 1
 truthName <- "L63_default"
 noiseName <- "Gauss"
-noiseScale <- 1e-3
+noiseScale <- 0
 testDuration <- 20
 nInSample <- 100
 nOutOfSample <- 100
@@ -52,10 +52,30 @@ pt <- proc.time()
 model <- fitFullLoss(xTrainTrain, nDeg=nDeg, weightSchedule=wsFull, normalizationType="full", normalizationScale=0.2)
 cat(sprintf("took %.2fs.\n", (proc.time()-pt)[3]))
 
-wsCoef <- getWeightScheduleCoef(nDeg = nDeg, d = d, kmax = 1)
+
+ # Assimilation Error
+assimilation <- drop(model$analysis)
+stopifnot(nrow(assimilation) == nTrain)
+assimilationErr <- sqrt(rowSums((xTrainTruth - assimilation)^2))
+cat(sprintf("Assimilation Error: %.3f\n", sqrt(mean(assimilationErr^2))))
+
+# Forecast Error
+initialCondAssi <- assimilation[nTrain, , drop=FALSE]
+predictionAssi <- predictFullLoss(model, initialCondAssi, nTest)
+forcastAssiErr <- sqrt(rowSums((xTest - drop(predictionAssi))^2))
+cat(sprintf("Forecast assi valid steps: %d\n", min(which(forcastAssiErr > 0.5*truthSd)-1)))
+
+initialCondTrue <- xTrainTruth[nrow(xTrainTruth), , drop=FALSE]
+predictionTrue <- predictFullLoss(model, initialCondTrue, nTest)
+forcastTrueErr <- sqrt(rowSums((xTest - drop(predictionTrue))^2))
+cat(sprintf("Forecast true valid steps: %d\n", min(which(forcastTrueErr > 0.5*truthSd)-1)))
+
+
+wsCoef <- getWeightScheduleCoef(nDeg = nDeg, d = d, kmax = 10, type = "point")
 pt <- proc.time()
-model <- fitCoefLoss(xTrainTrain, nDeg=nDeg, weightSchedule=wsCoef, normalizationType="full", normalizationScale=0.2)
+model <- fitCoefLoss(xTrainTrain, nDeg=nDeg, weightSchedule=wsCoef, normalizationType="full", normalizationScale=0.2, verbose = TRUE)
 cat(sprintf("took %.2fs.\n", (proc.time()-pt)[3]))
+
 
  # Assimilation Error
 assimilation <- drop(model$analysis)
