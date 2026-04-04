@@ -1,4 +1,4 @@
-// poly_model_full.hpp
+// poly_model_ana.hpp
 // Do NOT #include <TMB.hpp>
 
 #include <algorithm>
@@ -8,17 +8,16 @@
 #define TMB_OBJECTIVE_PTR obj
 
 template<class Type>
-Type poly_model_full(objective_function<Type>* obj) {
+Type poly_model_ana(objective_function<Type>* obj) {
     DATA_MATRIX(obs);
+    DATA_MATRIX(coef);
     DATA_VECTOR(weights_obs);
     DATA_VECTOR(weights_ana);
     DATA_VECTOR(weights_pen);
-    DATA_VECTOR(weights_coef);
     DATA_INTEGER(deg);
 
     PARAMETER_MATRIX(ana);
-    PARAMETER_MATRIX(coef);
-
+    
     int n = obs.rows();
     int p = coef.rows();
     int layers = std::max((int)weights_obs.size() - 1, (int)weights_ana.size());
@@ -48,10 +47,6 @@ Type poly_model_full(objective_function<Type>* obj) {
         int m = current.rows();
         current = current.topRows(m-1) - current.bottomRows(m-1);
         nll += weights_pen[j] * (current.array() * current.array()).sum() / (m-1);
-    }
-
-    for(int j = 0; j < p; j++) {
-        nll += weights_coef[j] * coef.row(j).dot(coef.row(j)) / p;
     }
 
     return nll;

@@ -2,14 +2,17 @@
 
 #define TMB_LIB_INIT R_init_DynLossOptimR_TMBExports
 #include <TMB.hpp>
-#include "poly_model.hpp"
+#include "poly_model_ana.hpp"
+#include "poly_model_coef.hpp"
 #include "poly_model_full.hpp"
 
 template<class Type>
 Type objective_function<Type>::operator() () {
   DATA_STRING(model);
-  if(model == "poly_model") {
-    return poly_model(this);
+  if(model == "poly_model_ana") {
+    return poly_model_ana(this);
+  } else if(model == "poly_model_coef") {
+    return poly_model_coef(this);
   } else if(model == "poly_model_full") {
     return poly_model_full(this);
   } else {
