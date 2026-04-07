@@ -18,16 +18,6 @@ fitAnaLoss <- function(
   normalization <- PolyPropR::getNormalization(xTrain, normalizationType, normalizationScale)
   xTrain <- PolyPropR::normalize(xTrain, normalization)
 
-  optimizer <- function(par, fn, gr, reltol) {
-    stats::optim(par, fn, gr,
-      method = "BFGS",
-      control = list(
-        maxit = maxit,
-        reltol = reltol
-      )
-    )
-  }
-
   analysis <- xTrain
   target <- xTrain
 
@@ -53,8 +43,8 @@ fitAnaLoss <- function(
       silent = TRUE
     )
 
-    opt <- optimizer(obj$par, obj$fn, obj$gr, reltol = ws$reltol)
-    if (opt$convergence != 0) warning("Optimizer did not converge.", immediate.=TRUE)
+    opt <- optimizer(obj$par, obj$fn, obj$gr)
+    if (opt$convergence != 0L) break
 
     analysisNew <- opt$par[names(opt$par) == "ana"]
     dim(analysisNew) <- dim(analysis)

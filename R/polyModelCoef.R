@@ -3,7 +3,6 @@ fitCoefLoss <- function(
   xTrain,
   nDeg,
   weightSchedule,
-  intermediate = 1L,
   normalizationType = "none",
   normalizationScale = 1.0,
   verbose = FALSE,
@@ -15,16 +14,6 @@ fitCoefLoss <- function(
 
   normalization <- PolyPropR::getNormalization(xTrain, normalizationType, normalizationScale)
   xTrain <- PolyPropR::normalize(xTrain, normalization)
-
-  optimizer <- function(par, fn, gr, reltol) {
-    stats::optim(par, fn, gr,
-      method = "BFGS",
-      control = list(
-        maxit = maxit,
-        reltol = reltol
-      )
-    )
-  }
 
   # Initial linear fit
   input1 <- xTrain[-n, , drop = FALSE]
@@ -48,15 +37,15 @@ fitCoefLoss <- function(
                  weights_obs = ws$weightsObs,
                  weights_coef = ws$weightsCoef,
                  deg = nDeg,
-                 intermediate = intermediate
+                 intermediate = ws$intermediate
                )),
       parameters = list(coef = coef),
       DLL = "DynLossOptimR_TMBExports",
       silent = TRUE
     )
 
-    opt <- optimizer(obj$par, obj$fn, obj$gr, reltol = ws$reltol)
-    if (opt$convergence != 0) warning("Optimizer did not converge.", immediate.=TRUE)
+    opt <- optimizer(obj$par, obj$fn, obj$gr)
+    if (opt$convergence != 0L) break
 
     coefNew <- opt$par[names(opt$par) == "coef"]
     dim(coefNew) <- dim(coef)

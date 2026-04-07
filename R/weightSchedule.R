@@ -2,11 +2,11 @@
 getWeightScheduleFull <- function(
   nDeg,
   d,
+  intermediate = 1L,
   kmax = 1L,
   weightsObsBase = 0.2,
   weightsAnaBase = 0.2,
-  weightsPen = double(0),
-  reltol = 1e-7
+  weightsPen = double(0)
 ) {
   weightSchedule <- lapply(seq_len(kmax), function(k) {
     list(
@@ -14,7 +14,7 @@ getWeightScheduleFull <- function(
       weightsAna = rep(weightsAnaBase * k, k) / k,
       weightsPen = weightsPen,
       weightsCoef = rep(0, nrow(PolyPropR::getMonomialFeatureDegrees(d, nDeg))),
-      reltol = reltol
+      intermediate = 1L
       # weightsCoef = dplyr::case_match(
       #   rowSums(PolyPropR::getMonomialFeatureDegrees(d, nDeg)),
       #   0 ~ 0,
@@ -30,12 +30,12 @@ getWeightScheduleFull <- function(
 
 #' @export
 getWeightScheduleCoef <- function(
-  nDeg,
-  d,
-  kmax = 1L,
-  weightsObsBase = 0.2,
-  reltol = 1e-7,
-  type = "const"
+    nDeg,
+    d,
+    intermediate = 1L,
+    kmax = 1L,
+    weightsObsBase = 0.2,
+    type = "const"
 ) {
   obsWeightFun <- switch(
     type,
@@ -47,7 +47,24 @@ getWeightScheduleCoef <- function(
     list(
       weightsObs = obsWeightFun(k, weightsObsBase),
       weightsCoef = rep(0, nrow(PolyPropR::getMonomialFeatureDegrees(d, nDeg))),
-      reltol = reltol
+      intermediate = 1L
+    )
+  })
+  return(weightSchedule)
+}
+
+#' @export
+getWeightScheduleCoefIntermediate <- function(
+    nDeg,
+    d,
+    intermediate,
+    weightsObsBase = 1
+) {
+  weightSchedule <- lapply(seq_len(intermediate), function(k) {
+    list(
+      weightsObs = c(0, weightsObsBase),
+      weightsCoef = rep(0, nrow(PolyPropR::getMonomialFeatureDegrees(d, nDeg))),
+      intermediate = k
     )
   })
   return(weightSchedule)
@@ -60,15 +77,13 @@ getWeightScheduleAna <- function(
     kmax = 1L,
     weightsObsBase = 0.2,
     weightsAnaBase = 0.2,
-    weightsPen = double(0),
-    reltol = 1e-7
+    weightsPen = double(0)
 ) {
   weightSchedule <- lapply(seq_len(kmax), function(k) {
     list(
       weightsObs = c(1, rep(weightsObsBase, k)) / k,
       weightsAna = rep(weightsAnaBase * k, k) / k,
-      weightsPen = weightsPen,
-      reltol = reltol
+      weightsPen = weightsPen
     )
   })
   return(weightSchedule)
