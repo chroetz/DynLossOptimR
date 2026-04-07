@@ -3,10 +3,12 @@ fitFullLoss <- function(
   xTrain,
   nDeg,
   weightSchedule,
+  intermediate = 1L,
   normalizationType = "none",
   normalizationScale = 1.0,
   targetUpdateFactor = 0,
-  verbose = FALSE
+  verbose = FALSE,
+  maxit = 1e4
 ) {
 
   n <- nrow(xTrain)
@@ -19,7 +21,7 @@ fitFullLoss <- function(
     stats::optim(par, fn, gr,
       method = "BFGS",
       control = list(
-        maxit = 1e4,
+        maxit = maxit,
         reltol = reltol
       )
     )
@@ -48,7 +50,8 @@ fitFullLoss <- function(
                  weights_ana = ws$weightsAna,
                  weights_pen = ws$weightsPen,
                  weights_coef = ws$weightsCoef,
-                 deg = nDeg
+                 deg = nDeg,
+                 intermediate = intermediate
                )),
       parameters = list(coef = coef, ana = analysis),
       DLL = "DynLossOptimR_TMBExports",

@@ -15,9 +15,11 @@ Type poly_model_ana(objective_function<Type>* obj) {
     DATA_VECTOR(weights_ana);
     DATA_VECTOR(weights_pen);
     DATA_INTEGER(deg);
+    DATA_INTEGER(intermediate);
+
 
     PARAMETER_MATRIX(ana);
-    
+
     int n = obs.rows();
     int p = coef.rows();
     int layers = std::max((int)weights_obs.size() - 1, (int)weights_ana.size());
@@ -30,8 +32,10 @@ Type poly_model_ana(objective_function<Type>* obj) {
     matrix<Type> features(n, p);
 
     for(int k = 0; k < layers; k++) {
-        fill_poly(features, currentInput, deg);
-        currentInput = features * coef;
+        for (int j = 0; j < intermediate; j++) {
+            fill_poly(features, currentInput, deg);
+            currentInput = features * coef;
+        }
         matrix<Type> diff = currentInput.topRows(n-k-1) - obs.bottomRows(n-k-1);
         if (weights_obs.size() > k+1) {
             nll += weights_obs[k+1] * (diff.array() * diff.array()).sum() / (n-k-1);

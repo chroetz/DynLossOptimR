@@ -1,11 +1,13 @@
 #' @export
-fitCoefLoss <- function(
+fitAnaLoss <- function(
   xTrain,
   nDeg,
+  coef,
   weightSchedule,
   intermediate = 1L,
   normalizationType = "none",
   normalizationScale = 1.0,
+  targetUpdateFactor = 0,
   verbose = FALSE,
   maxit = 1e4
 ) {
@@ -26,12 +28,6 @@ fitCoefLoss <- function(
     )
   }
 
-  # Initial linear fit
-  input1 <- xTrain[-n, , drop = FALSE]
-  output1 <- xTrain[-1, , drop = FALSE]
-  features1 <- PolyPropR::evaluateMonomialFeatures(input1, nDeg)
-  coef <- PolyPropR::fitLinear(features1, output1)
-
   analysis <- xTrain
   target <- xTrain
 
@@ -42,15 +38,17 @@ fitCoefLoss <- function(
     ws <- weightSchedule[[k]]
 
     obj <- TMB::MakeADFun(
-      data = c(model = "poly_model_coef",
+      data = c(model = "poly_model_ana",
                list(
                  obs = target,
+                 coef = coef,
                  weights_obs = ws$weightsObs,
-                 weights_coef = ws$weightsCoef,
+                 weights_ana = ws$weightsAna,
+                 weights_pen = ws$weightsPen,
                  deg = nDeg,
                  intermediate = intermediate
                )),
-      parameters = list(coef = coef),
+      parameters = list(ana = analysis),
       DLL = "DynLossOptimR_TMBExports",
       silent = TRUE
     )
@@ -58,17 +56,18 @@ fitCoefLoss <- function(
     opt <- optimizer(obj$par, obj$fn, obj$gr, reltol = ws$reltol)
     if (opt$convergence != 0) warning("Optimizer did not converge.", immediate.=TRUE)
 
-    coefNew <- opt$par[names(opt$par) == "coef"]
-    dim(coefNew) <- dim(coef)
+    analysisNew <- opt$par[names(opt$par) == "ana"]
+    dim(analysisNew) <- dim(analysis)
 
-    coef <- coefNew
+    analysis <- analysisNew
+    target <- (1 - targetUpdateFactor) * target + targetUpdateFactor * analysis
   }
 
   return(
     list(
       coef = coef,
       nDeg = nDeg,
-      analysis = PolyPropR::denormalize(xTrain, normalization),
+      analysis = PolyPropR::denormalize(analysis, normalization),
       normalization = normalization
     )
   )
@@ -77,6 +76,6 @@ fitCoefLoss <- function(
 
 
 #' @export
-predictCoefLoss <- function(model, initialConditions, nPred) {
+predictAnaLoss <- function(model, initialConditions, nPred) {
   predictDefault(model, initialConditions, nPred)
 }
