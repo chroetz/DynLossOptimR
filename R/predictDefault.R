@@ -5,7 +5,7 @@ predictDefault <- function(model, initialConditions, nPred) {
   currentState <- initialConditions
   for (i in seq_len(nPred)) {
     currentState <- PolyPropR::evaluateMonomialFeatures(currentState, model$nDeg) %*% model$coef
-    prediction[i, , ] <- PolyPropR::denormalize(currentState, model$normalization)
+    prediction[i, , ] <- t(PolyPropR::denormalize(currentState, model$normalization))
   }
   return(prediction)
 }

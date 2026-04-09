@@ -45,7 +45,7 @@ fitCoefLoss <- function(
     )
 
     opt <- optimizer(obj$par, obj$fn, obj$gr)
-    if (opt$convergence != 0L) break
+    if (opt$convergence > 1L) break # 0: all good. 1: not converged but maybe good enough
 
     coefNew <- opt$par[names(opt$par) == "coef"]
     dim(coefNew) <- dim(coef)

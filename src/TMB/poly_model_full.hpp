@@ -20,6 +20,8 @@ Type poly_model_full(objective_function<Type>* obj) {
     PARAMETER_MATRIX(ana);
     PARAMETER_MATRIX(coef);
 
+    Type scale = Type(1e5); // to soft squash state to [-1e5, 1e5]
+
     int n = obs.rows();
     int p = coef.rows();
     int layers = std::max((int)weights_obs.size() - 1, (int)weights_ana.size());
@@ -35,6 +37,7 @@ Type poly_model_full(objective_function<Type>* obj) {
         for (int j = 0; j < intermediate; j++) {
             fill_poly(features, currentInput, deg);
             currentInput = features * coef;
+            currentInput = scale * (currentInput / scale).array().tanh(); // Soft squash to [-scale, scale].
         }
         matrix<Type> diff = currentInput.topRows(n-k-1) - obs.bottomRows(n-k-1);
         if (weights_obs.size() > k+1) {
