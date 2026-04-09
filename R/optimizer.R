@@ -38,8 +38,8 @@ optimizer <- function(par, fn, gr, he = NULL, method = c("nlminb", "L-BFGS-B"),
   }
 
   if (result$convergence != 0L) {
-    warning("Optimizer did not converge (code ", result$convergence, "): ",
-            result$message, immediate. = TRUE)
+    cat("Warning: Optimizer did not converge (code ", result$convergence, "): ",
+            result$message, "\n")
   }
   result
 }

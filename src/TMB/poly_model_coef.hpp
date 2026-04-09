@@ -16,7 +16,7 @@ Type poly_model_coef(objective_function<Type>* obj) {
 
     PARAMETER_MATRIX(coef);
 
-    Type scale = Type(1e5); // to soft squash state to [-1e5, 1e5]
+    Type scale = Type(1e4); // to soft squash state to [-1e4, 1e4]
 
     int n = obs.rows();
     int p = coef.rows();
