@@ -7,12 +7,10 @@
 #define TMB_OBJECTIVE_PTR obj
 
 template<class Type>
-Type poly_model_coef(objective_function<Type>* obj) {
+Type poly_model_coef0(objective_function<Type>* obj) {
     DATA_MATRIX(obs);
-    DATA_VECTOR(weights_obs);
-    DATA_VECTOR(weights_coef);
     DATA_INTEGER(deg);
-    DATA_INTEGER(intermediate);
+    DATA_INTEGER(layers);
 
     PARAMETER_MATRIX(coef);
 
@@ -20,7 +18,6 @@ Type poly_model_coef(objective_function<Type>* obj) {
 
     int n = obs.rows();
     int p = coef.rows();
-    int layers = (int)weights_obs.size();
 
     Type nll = 0;
 
@@ -28,17 +25,11 @@ Type poly_model_coef(objective_function<Type>* obj) {
     matrix<Type> features(n, p);
 
     for(int k = 0; k < layers; k++) {
-        for (int j = 0; j < intermediate; j++) {
-          fill_poly(features, currentInput, deg);
-          currentInput = features * coef;
-          currentInput = scale * (currentInput / scale).array().tanh(); // Soft squash to [-scale, scale].
-        }
+        fill_poly(features, currentInput, deg);
+        currentInput = features * coef;
+        currentInput = scale * (currentInput / scale).array().tanh(); // Soft squash to [-scale, scale].
         matrix<Type> diff = currentInput.topRows(n-k-1) - obs.bottomRows(n-k-1);
-        nll += weights_obs[k] * (diff.array() * diff.array()).sum() / (n-k-1);
-    }
-
-    for(int j = 0; j < p; j++) {
-        nll += weights_coef[j] * coef.row(j).dot(coef.row(j)) / p;
+        nll += (diff.array() * diff.array()).sum();
     }
 
     return nll;

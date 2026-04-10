@@ -4,6 +4,7 @@
 #include <TMB.hpp>
 #include "poly_model_ana.hpp"
 #include "poly_model_coef.hpp"
+#include "poly_model_coef0.hpp"
 #include "poly_model_full.hpp"
 
 template<class Type>
@@ -13,6 +14,8 @@ Type objective_function<Type>::operator() () {
     return poly_model_ana(this);
   } else if(model == "poly_model_coef") {
     return poly_model_coef(this);
+  } else if(model == "poly_model_coef0") {
+    return poly_model_coef0(this);
   } else if(model == "poly_model_full") {
     return poly_model_full(this);
   } else {
