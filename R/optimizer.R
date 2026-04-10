@@ -1,4 +1,4 @@
-optimizer <- function(par, fn, gr, he = NULL, method = c("nlminb", "L-BFGS-B", "BFGS"),
+optimizer <- function(par, fn, gr, he = NULL, method = c("BFGS", "L-BFGS-B", "nlminb"),
                       maxit = 1e4, restarts = 2) {
   method <- match.arg(method)
   run <- function(par) {
