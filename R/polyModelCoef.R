@@ -58,7 +58,8 @@ fitCoefLoss <- function(
       coef = coef,
       nDeg = nDeg,
       analysis = PolyPropR::denormalize(xTrain, normalization),
-      normalization = normalization
+      normalization = normalization,
+      intermediate = ws$intermediate
     )
   )
 

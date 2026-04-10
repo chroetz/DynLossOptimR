@@ -58,7 +58,8 @@ fitAnaLoss <- function(
       coef = coef,
       nDeg = nDeg,
       analysis = PolyPropR::denormalize(analysis, normalization),
-      normalization = normalization
+      normalization = normalization,
+      intermediate = intermediate
     )
   )
 
