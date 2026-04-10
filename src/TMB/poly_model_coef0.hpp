@@ -29,7 +29,7 @@ Type poly_model_coef0(objective_function<Type>* obj) {
         currentInput = features * coef;
         currentInput = scale * (currentInput / scale).array().tanh(); // Soft squash to [-scale, scale].
         matrix<Type> diff = currentInput.topRows(n-k-1) - obs.bottomRows(n-k-1);
-        nll += (diff.array() * diff.array()).sum();
+        nll += (diff.array() * diff.array()).sum() / (n-k-1);
     }
 
     return nll;

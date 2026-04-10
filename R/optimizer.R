@@ -1,7 +1,6 @@
-optimizer <- function(par, fn, gr, he = NULL, method = c("nlminb", "L-BFGS-B"),
+optimizer <- function(par, fn, gr, he = NULL, method = c("nlminb", "L-BFGS-B", "BFGS"),
                       maxit = 1e4, restarts = 2) {
   method <- match.arg(method)
-
   run <- function(par) {
     if (method == "nlminb") {
       res <- nlminb(par, fn, gr, hessian = he,
@@ -15,13 +14,16 @@ optimizer <- function(par, fn, gr, he = NULL, method = c("nlminb", "L-BFGS-B"),
         convergence = res$convergence,
         message     = res$message
       )
+    } else if (method == "BFGS") {
+      stats::optim(par, fn, gr,
+                   method = "BFGS",
+                   control = list(maxit = maxit, reltol = 1e-10))
     } else {
       stats::optim(par, fn, gr,
                    method = "L-BFGS-B",
                    control = list(maxit = maxit, factr = 1e6, pgtol = 1e-6))
     }
   }
-
   result <- NULL
   for (i in seq_len(restarts + 1)) {
     result <- tryCatch(run(par), error = function(e) {
@@ -36,10 +38,9 @@ optimizer <- function(par, fn, gr, he = NULL, method = c("nlminb", "L-BFGS-B"),
     if (result$convergence == 0L) break
     par <- result$par
   }
-
   if (result$convergence != 0L) {
     cat("Warning: Optimizer did not converge (code ", result$convergence, "): ",
-            result$message, "\n")
+        result$message, "\n")
   }
   result
 }
