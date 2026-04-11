@@ -22,9 +22,6 @@ fitCoef0Loss <- function(
   features1 <- PolyPropR::evaluateMonomialFeatures(input1, nDeg)
   coef <- PolyPropR::fitLinear(features1, output1)
 
-  analysis <- xTrain
-  target <- xTrain
-
   for (k in seq_len(layers-1)) {
 
     if (verbose) cat("Start ", k, "\n")

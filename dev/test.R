@@ -50,7 +50,7 @@ d <- truth$info$state0 |> length()
 
 wsFull <- getWeightScheduleFull(nDeg = nDeg, d = d, kmax = 1)
 pt <- proc.time()
-model <- fitFullLoss(xTrainTrain, nDeg=nDeg, intermediate=1, weightSchedule=wsFull, normalizationType="full", normalizationScale=0.2)
+model <- fitFullLoss(xTrainTrain, nDeg=nDeg, weightSchedule=wsFull, normalizationType="full", normalizationScale=0.2)
 cat(sprintf("took %.2fs.\n", (proc.time()-pt)[3]))
 
 

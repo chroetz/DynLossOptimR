@@ -7,7 +7,8 @@ fitFullLoss <- function(
   normalizationScale = 1.0,
   targetUpdateFactor = 0,
   verbose = FALSE,
-  maxit = 1e4
+  optimMaxit = 1e4,
+  optimMethod = "nlminb"
 ) {
 
   n <- nrow(xTrain)
@@ -47,7 +48,7 @@ fitFullLoss <- function(
       silent = TRUE
     )
 
-    opt <- optimizer(obj$par, obj$fn, obj$gr)
+    opt <- optimizer(obj$par, obj$fn, obj$gr, method = optimMethod, maxit = optimMaxit)
     if (opt$convergence > 1L) break # 0: all good. 1: not converged but maybe good enough
 
     analysisNew <- opt$par[names(opt$par) == "ana"]

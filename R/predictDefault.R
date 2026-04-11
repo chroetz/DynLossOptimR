@@ -6,7 +6,7 @@ predictDefault <- function(model, initialConditions, nPred, softSquashScale=1e4)
   for (i in seq_len(nPred)) {
     for (j in seq_len(model$intermediate)) {
         currentState <- PolyPropR::evaluateMonomialFeatures(currentState, model$nDeg) %*% model$coef
-        currentInput <- softSquashScale * tanh(currentState / softSquashScale)
+        currentState <- softSquashScale * tanh(currentState / softSquashScale)
     }
     prediction[i, , ] <- t(PolyPropR::denormalize(currentState, model$normalization))
   }
